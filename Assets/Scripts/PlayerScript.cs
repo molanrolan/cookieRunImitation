@@ -4,75 +4,98 @@ using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
 {
-    private Animator animator;
-    private Rigidbody2D rb;
-    private bool isGround = true, isAxisUp = false, isAxisDown = false;
-    public float speed = 6f,jumpForce = 10f;
-    private Vector2 tempVelocity=new Vector2(0f,0f);
-    private string jumpAnimation = "isJump",walkAnimation="isWalk";
-    private Vector3 tempPos;
+    private Animator _Anim;
+    private Rigidbody2D _Rb;
+    private bool _IsGround = true, _IsAxisUp = false, _IsAxisDown = false;
+    public float Speed = 6f,JumpForce = 10f;
+    private Vector2 _TempVelocity=new Vector2(0f,0f);
+    private string _JumpAnimation = "isJump",_WalkAnimation="isWalk";
+    private Vector3 _TempPos;
+    [SerializeField] private TMPro.TMP_Text _ScoreText;
+    [SerializeField] private GameObject _DeadScreen;
+    private int _Score;
+    public int Health=5;
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        animator=GetComponent<Animator>();
-        
-        PauseManager.instance.onPaused();
+        _Rb = GetComponent<Rigidbody2D>();
+        _Anim=GetComponent<Animator>();
+        _Score=0;
+        _ScoreText.text=_Score.ToString();
+        _DeadScreen.SetActive(false);
+        PauseManager.Instance.onPaused();
     }
-    private void OnEnable() {
-        PauseManager.instance.onGameStateChanged+=onGameStateChanged;   //unsubscride is at PauseManager
-    }
-
+    void OnEnable(){PauseManager.Instance.onGameStateChanged+=onGameStateChanged;}  //unsubscribe is at pausemanager
+    void OnDisable(){PauseManager.Instance.onGameStateChanged-=onGameStateChanged;} //return error on scenedestroy
+    
     // Update is called once per frame
     void Update()
     {
         //suspend character if isPaused
-        if(PauseManager.instance.isPaused){
-            transform.position=tempPos;
-            if(Input.GetButtonDown("Jump"))PauseManager.instance.onPaused();
+        if(PauseManager.Instance.IsPaused){
+            transform.position=_TempPos;
+            if(Input.GetButtonDown("Jump"))PauseManager.Instance.onPaused();
             return;}
 
         //move function
-        transform.localScale = new Vector2(Input.GetAxis("Horizontal")<0 ? -1f:1f,1f);
-        rb.velocity = new Vector2(Input.GetAxis("Horizontal")*speed,rb.velocity.y);
-        animator.SetBool(walkAnimation,Mathf.Abs(Input.GetAxis("Horizontal"))>0.2);
+        _Rb.velocity = new Vector2(Input.GetAxis("Horizontal")*Speed,_Rb.velocity.y);
+        if(_Rb.velocity.x>0)transform.localScale = new Vector3(1f,1f,1f);
+        else if(_Rb.velocity.x<0)transform.localScale = new Vector3(-1f,1f,1f);
+        _Anim.SetBool(_WalkAnimation,Mathf.Abs(Input.GetAxis("Horizontal"))>0.2);
 
         //jump function
-        if(isGround && (Input.GetButtonDown("Jump") || Input.GetAxisRaw("Vertical")==1)){
-            if(Input.GetAxisRaw("Vertical")==1) isAxisUp=true;
-            rb.velocity = new Vector2(rb.velocity.x,jumpForce);
-            animator.SetBool(jumpAnimation,true);
-            isGround=false;
+        if(_IsGround && (Input.GetButtonDown("Jump") || Input.GetAxisRaw("Vertical")==1)){
+            if(Input.GetAxisRaw("Vertical")==1) _IsAxisUp=true;
+            _Rb.velocity = new Vector2(_Rb.velocity.x,JumpForce);
+            _Anim.SetBool(_JumpAnimation,true);
+            _IsGround=false;
         }
-        else if(Input.GetButtonUp("Jump") || (Input.GetAxisRaw("Vertical")==0&&isAxisUp)){
-            rb.velocity = new Vector2(rb.velocity.x,rb.velocity.y/2);
-            isAxisUp=false;
+        else if(Input.GetButtonUp("Jump") || (Input.GetAxisRaw("Vertical")==0&&_IsAxisUp)){
+            _Rb.velocity = new Vector2(_Rb.velocity.x,_Rb.velocity.y/2);
+            _IsAxisUp=false;
         }
 
         //duck function
-        if(isGround&&Input.GetAxisRaw("Vertical")==-1){
-            isAxisDown=true;
+        if(_IsGround&&Input.GetAxisRaw("Vertical")==-1){
+            _IsAxisDown=true;
             transform.rotation=Quaternion.Euler(0f,0f,90f);
-        }else if(isAxisDown && Input.GetAxisRaw("Vertical")==0){
-            isAxisDown=false;
+        }else if(_IsAxisDown && Input.GetAxisRaw("Vertical")==0){
+            _IsAxisDown=false;
             transform.rotation=Quaternion.Euler(0f,0f,0f);
         }
     }
 
     private void onGameStateChanged(){
-        if(PauseManager.instance.isPaused){
-            tempPos=transform.position;
-            tempVelocity = new Vector2(rb.velocity.x,rb.velocity.y);
-            rb.velocity = new Vector2(0,0);
+        if(PauseManager.Instance.IsPaused){
+            _TempPos=transform.position;
+            _TempVelocity = new Vector2(_Rb.velocity.x,_Rb.velocity.y);
+            _Rb.velocity = new Vector2(0,0);
         } else{
-            rb.velocity = tempVelocity;
+            _Rb.velocity = _TempVelocity;
         }
     }
 
     private void OnCollisionEnter2D(Collision2D other) {
         if(other.gameObject.tag == "Ground"){
-            isGround=true;
-            animator.SetBool(jumpAnimation,false);
+            _IsGround=true;
+            _Anim.SetBool(_JumpAnimation,false);
+        } else if (other.gameObject.tag == "Enemy"){
+            Health-=1;
+            Debug.Log("Got hit by enemy : " + other.gameObject.name);
+            Destroy(other.gameObject);
+            if(Health<=0){
+                _DeadScreen.SetActive(true);
+                PauseManager.Instance.onPaused();
+                Debug.Log("Player have died");}
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other) {
+        if(other.gameObject.tag == "Enemy"){
+            _Score+=1;
+            _ScoreText.text=_Score.ToString();
+            Destroy(other.gameObject);
+            Debug.Log("Killed the enemy : " + other.gameObject.name);
         }
     }
 }

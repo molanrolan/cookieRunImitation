@@ -7,7 +7,7 @@ public class UIRayCastScript : MonoBehaviour, IPointerDownHandler
 {
     public void OnPointerDown(PointerEventData eventData)
     {
-        Debug.Log("UIRayCast pointer down2 executed" + eventData.pointerCurrentRaycast.gameObject.name);
-        PauseManager.instance.onPaused();
+        Debug.Log("UIRayCast pointer down executed" + eventData.pointerCurrentRaycast.gameObject.name);
+        PauseManager.Instance.onPaused();
     }
 }

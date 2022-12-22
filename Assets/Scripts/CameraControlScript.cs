@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class CameraControlScript : MonoBehaviour
 {
-    private PlayerScript player;
+    private PlayerScript _Player;
     // Start is called before the first frame update
     void Start()
     {
-        player = FindObjectOfType<PlayerScript>();
+        _Player = FindObjectOfType<PlayerScript>();
     }
 
     // Update is called once per frame
@@ -18,7 +18,7 @@ public class CameraControlScript : MonoBehaviour
     }
 
     private void LateUpdate() {
-        transform.position= new Vector3(Mathf.Max(0,player.transform.position.x),
-            Mathf.Max(-10,player.transform.position.y),transform.position.z);
+        transform.position= new Vector3(Mathf.Max(0,_Player.transform.position.x),
+            Mathf.Max(-10,_Player.transform.position.y),transform.position.z);
     }
 }

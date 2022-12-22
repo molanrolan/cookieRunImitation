@@ -5,26 +5,26 @@ using UnityEngine;
 
 public class PauseManager : MonoBehaviour
 {
-    private static PauseManager _instance;
-    public static PauseManager instance{
+    private static PauseManager _Instance;
+    public static PauseManager Instance{
         get{ 
-            if(_instance == null){      //LazyObject init
-            _instance= FindObjectOfType<PauseManager>();
-            Debug.Log("instance was called while null : " + _instance?.name);
+            if(_Instance == null){      //LazyObject init
+            _Instance= FindObjectOfType<PauseManager>();
+            Debug.Log("instance was called while null : " + _Instance?.name);
             }
-            return _instance;
+            return _Instance;
         }
-        set{_instance = value;}
+        set{_Instance = value;}
     }
-    public bool isPaused=false;
+    public bool IsPaused=false;
     // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     // static void init(){      //PauseManager awake is later than PlayerScript, hence event is null
     //     instance = FindObjectOfType<PauseManager>();
     //     Debug.Log("PauseManager is init" + instance.name);
     // }
     private void Awake() {
-        instance = this;            // singleton... but this awake is sometimes slower than other awake
-        Debug.Log("PauseManager is awake : " + _instance.name);
+        Instance = this;            // singleton... but this awake is sometimes slower than other awake
+        // Debug.Log("PauseManager is awake : " + _Instance.name);
     }
 
     private void OnDisable() {
@@ -33,23 +33,23 @@ public class PauseManager : MonoBehaviour
     public event Action onGameStateChanged;
     private void SetState(bool newGameState)
     {
-        if (newGameState == isPaused)
+        if (newGameState == IsPaused)
             return;
  
-        isPaused = newGameState;
+        IsPaused = newGameState;
         if(onGameStateChanged!=null)
             onGameStateChanged();
     }
 
     public void onPaused(){
-        Debug.Log("onPause function is Called, current isPaused = " + !isPaused);
-        SetState(!isPaused);
+        // Debug.Log("onPause function is Called, current isPaused = " + !IsPaused);
+        SetState(!IsPaused);
     }
     public void onHome(){
-         Debug.Log("onHome function is Called");
+        //  Debug.Log("onHome function is Called");
     }
     public void onRetry(){
-         Debug.Log("onRetry function is Called");
+        //  Debug.Log("onRetry function is Called");
          UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
