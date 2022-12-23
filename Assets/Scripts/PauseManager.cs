@@ -23,7 +23,7 @@ public class PauseManager : MonoBehaviour
     //     Debug.Log("PauseManager is init" + instance.name);
     // }
     private void Awake() {
-        Instance = this;            // singleton... but this awake is sometimes slower than other awake
+        if(Instance==null)Instance = this;  //singleton... but this awake is slower than other script awake
         // Debug.Log("PauseManager is awake : " + _Instance.name);
     }
 
@@ -46,11 +46,12 @@ public class PauseManager : MonoBehaviour
         SetState(!IsPaused);
     }
     public void onHome(){
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
         //  Debug.Log("onHome function is Called");
     }
     public void onRetry(){
+        UnityEngine.SceneManagement.SceneManager.LoadScene("GamePlay");
         //  Debug.Log("onRetry function is Called");
-         UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
 }
